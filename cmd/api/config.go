@@ -16,7 +16,7 @@ import (
 
 func updateConfigWithEnvVariables() (*config, error) {
 	// Load environment variables from `.env` file
-	err := godotenv.Load()
+	err := godotenv.Load(".env", ".env.development")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}

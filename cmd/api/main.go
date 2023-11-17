@@ -2,6 +2,7 @@
 package main
 
 import (
+	"goauthbackend.ggvp.dev/internal/data"
 	"os"
 	"sync"
 	_ "time"
@@ -24,6 +25,7 @@ type config struct {
 		maxIdleTime  string
 	}
 	redisURL string
+	debug    bool
 }
 
 // Main `application` type
@@ -32,6 +34,7 @@ type application struct {
 	logger      *jsonlog.Logger
 	redisClient *redis.Client
 	wg          sync.WaitGroup
+	models      data.Models
 }
 
 func main() {
@@ -39,34 +42,35 @@ func main() {
 
 	cfg, err := updateConfigWithEnvVariables()
 	if err != nil {
-		logger.PrintFatal(err, nil)
+		logger.PrintFatal(err, nil, cfg.debug)
 	}
 
 	db, err := openDB(*cfg)
 	if err != nil {
-		logger.PrintFatal(err, nil)
+		logger.PrintFatal(err, nil, cfg.debug)
 	}
 
 	defer db.Close()
 
-	logger.PrintInfo("database connection pool established", nil)
+	logger.PrintInfo("database connection pool established", nil, cfg.debug)
 
 	opt, err := redis.ParseURL(cfg.redisURL)
 	if err != nil {
-		logger.PrintFatal(err, nil)
+		logger.PrintFatal(err, nil, cfg.debug)
 	}
 	cliend := redis.NewClient(opt)
 
-	logger.PrintInfo("redis connection pool established", nil)
+	logger.PrintInfo("redis connection pool established", nil, cfg.debug)
 
 	app := &application{
 		config:      *cfg,
 		logger:      logger,
 		redisClient: cliend,
+		models:      data.NewModels(db),
 	}
 
 	err = app.serve()
 	if err != nil {
-		logger.PrintFatal(err, nil)
+		logger.PrintFatal(err, nil, cfg.debug)
 	}
 }

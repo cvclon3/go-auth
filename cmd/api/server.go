@@ -36,7 +36,7 @@ func (app *application) serve() error {
 
 		app.logger.PrintInfo("shutting down srv", map[string]string{
 			"signal": s.String(),
-		})
+		}, app.config.debug)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 
@@ -48,7 +48,7 @@ func (app *application) serve() error {
 		}
 
 		app.logger.PrintInfo("completing background tasks", map[string]string{
-			"addr": srv.Addr})
+			"addr": srv.Addr}, app.config.debug)
 
 		app.wg.Wait()
 
@@ -58,7 +58,7 @@ func (app *application) serve() error {
 	app.logger.PrintInfo("starting srv", map[string]string{
 		"addr": srv.Addr,
 		"env":  app.config.env,
-	})
+	}, app.config.debug)
 
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
@@ -71,7 +71,7 @@ func (app *application) serve() error {
 
 	app.logger.PrintInfo("stopped server", map[string]string{
 		"addr": srv.Addr,
-	})
+	}, app.config.debug)
 
 	return nil
 }
